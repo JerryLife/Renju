@@ -1,3 +1,5 @@
+# Python 3.6.0
+
 import pygame
 from pygame.locals import *
 from sys import exit
@@ -122,11 +124,73 @@ def check_win(board):
                     raise WhiteWin
                 else:
                     pass
+
+        # check angle \
+        x, y = 0, 14
+        while x < 15 and y >= 0:
+            black_num, white_num = 0, 0
+            try:
+                for i in range(15):
+                    if not (0 <= x+i <= 14 and 0 <= y+i <= 14):
+                        raise IndexError
+                    if board[x+i][y+i].occupy == BLACK:
+                        white_num = 0
+                        black_num += 1
+                    elif board[x+i][y+i].occupy == WHITE:
+                        black_num = 0
+                        white_num += 1
+                    else:  # occupy == None
+                        black_num, white_num = 0, 0
+                        draw = False
+
+                    # see if there are 5 string
+                    if black_num == 5:
+                        raise BlackWin
+                    elif white_num == 5:
+                        raise WhiteWin
+            except IndexError:
+                pass
+            finally:
+                if y == 0:
+                    x += 1
+                else:
+                    y -= 1
+
+        # check angle /
+        x, y = 0, 0
+        while x < 15 and y < 15:
+            black_num, white_num = 0, 0
+            try:
+                for i in range(15):
+                    if not (0 <= x + i <= 14 and 0 <= y - i <= 14):
+                        raise IndexError
+                    if board[x + i][y - i].occupy == BLACK:
+                        white_num = 0
+                        black_num += 1
+                    elif board[x + i][y - i].occupy == WHITE:
+                        black_num = 0
+                        white_num += 1
+                    else:  # occupy == None
+                        black_num, white_num = 0, 0
+                        draw = False
+                    # see if there are 5 string
+                    if black_num == 5:
+                        raise BlackWin
+                    elif white_num == 5:
+                        raise WhiteWin
+            except IndexError:
+                pass
+            finally:
+                if y == 14:
+                    x += 1
+                else:
+                    y += 1
+
+        # check if draw
+        if draw:
+            return DRAW
         else:
-            if draw:
-                return DRAW
-            else:
-                return None
+            return None
     except Loop as rst:
         if isinstance(rst, BlackWin):
             return BLACK
@@ -134,7 +198,9 @@ def check_win(board):
             return WHITE
 
 
+
 def main():
+
     # init the window
     pygame.init()
     screen = pygame.display.set_mode((SIZE + EXTRA_WIDTH, SIZE), 0, 32)
@@ -164,33 +230,40 @@ def main():
 
         # event loop
         for event in pygame.event.get():
+
             if event.type == QUIT:
                 exit()
 
             elif event.type == MOUSEBUTTONDOWN:
                 x_pos, y_pos = pygame.mouse.get_pos()
-                x_pos -= EXTRA_WIDTH
-                try:
-                    for x in range(15):
-                        for y in range(15):
-                            cur_point = board[x][y]
-                            if cur_point.in_round(x_pos, y_pos):
-                                '''paint the point and mark the position'''
-                                if turn == BLACK and cur_point.occupy is None:
-                                    point_pic = pygame.image.load("black.png").convert_alpha()
-                                    board[x][y].occupy = BLACK
-                                    turn = WHITE
-                                elif turn == WHITE and cur_point.occupy is None:
-                                    point_pic = pygame.image.load("white.png").convert_alpha()
-                                    board[x][y].occupy = WHITE
-                                    turn = BLACK
-                                else:   # cur_point has been occupied
+                # click in the board
+                if x_pos > EXTRA_WIDTH:
+                    x_pos -= EXTRA_WIDTH
+                    try:
+                        for x in range(15):
+                            for y in range(15):
+                                cur_point = board[x][y]
+                                if cur_point.in_round(x_pos, y_pos):
+                                    '''paint the point and mark the position'''
+                                    if turn == BLACK and cur_point.occupy is None:
+                                        point_pic = pygame.image.load("black.png").convert_alpha()
+                                        board[x][y].occupy = BLACK
+                                        turn = WHITE
+                                    elif turn == WHITE and cur_point.occupy is None:
+                                        point_pic = pygame.image.load("white.png").convert_alpha()
+                                        board[x][y].occupy = WHITE
+                                        turn = BLACK
+                                    else:   # cur_point has been occupied
+                                        raise Loop
+                                    # show the point
+                                    background.blit(point_pic,
+                                                    (cur_point.x_pos - POINT_R, cur_point.y_pos - POINT_R))
                                     raise Loop
-                                # show the point
-                                background.blit(point_pic,
-                                                (cur_point.x_pos - POINT_R, cur_point.y_pos - POINT_R))
-                                raise Loop
-                except Loop:
+                    except Loop:
+                        pass
+
+                # click out of board
+                else:
                     pass
             else:
                 pass
