@@ -27,6 +27,9 @@ def print_result(background, winner):
 
 
 def check_win(board):
+    """
+    return DRAW | BLACK | WHITE | None
+    """
 
     draw = True
     try:
